@@ -1,9 +1,49 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>foobar</title>
-	</head>
-	<body>
-		<div>foobar</div>
-	</body>
+<head>
+    <title>Network Monitor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #alerts { margin-bottom: 20px; }
+        .alert { padding: 10px; margin: 5px 0; border-radius: 5px; color: white; }
+        .malicious { background: #dc3545; }
+        .bandwidth { background: #ffc107; color: black; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div id="alerts"></div>
+    <table id="packet-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Protocol</th>
+                <th>Info</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        const socket = io();
+        socket.on('packet', (data) => {
+            if (data.type === 'malicious') {
+                document.getElementById('alerts').innerHTML += 
+                    `<div class="alert malicious">${data.message}</div>`;
+            } else {
+                const row = `<tr>
+                    <td>${new Date(data.time * 1000).toLocaleTimeString()}</td>
+                    <td>${data.src}</td>
+                    <td>${data.dst}</td>
+                    <td>${data.protocol}</td>
+                    <td>${data.info}</td>
+                </tr>`;
+                document.querySelector('#packet-table tbody').insertAdjacentHTML('afterbegin', row);
+            }
+        });
+    </script>
+</body>
 </html>
